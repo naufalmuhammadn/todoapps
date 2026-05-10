@@ -11,6 +11,7 @@ type TaskRepository interface {
 	Create(ctx context.Context, t model.Task) error
 	GetAll(ctx context.Context) ([]model.Task, error)
 	GetByID(ctx context.Context, id string) (model.Task, error)
+	Update(ctx context.Context, t model.Task) error
 }
 
 type PostgresRepo struct {
@@ -54,4 +55,10 @@ func (r *PostgresRepo) GetByID(
 		return model.Task{}, err
 	}
 	return t, nil
+}
+
+func (r *PostgresRepo) Update(ctx context.Context, t model.Task) error {
+	query := `UPDATE tasks SET task = $1, done = $2 WHERE id = $3`
+	_, err := r.db.ExecContext(ctx, query, t.Task, t.Done, t.ID)
+	return err
 }

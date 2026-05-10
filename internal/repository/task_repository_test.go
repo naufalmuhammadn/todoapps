@@ -193,3 +193,54 @@ func TestPostgresRepo_GetByID(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresRepo_Update(t *testing.T) {
+	tests := []struct {
+		name    string
+		task    model.Task
+		dbErr   error
+		wantErr bool
+	}{
+		{
+			name: "success",
+			task: model.Task{ID: 1, Task: "Updated", Done: true},
+		},
+		{
+			name:    "db error",
+			task:    model.Task{ID: 1, Task: "Fail", Done: false},
+			dbErr:   errors.New("database error"),
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("failed to create sqlmock: %v", err)
+			}
+			defer func() { _ = db.Close() }()
+
+			repo := &PostgresRepo{db: db}
+
+			if tc.dbErr != nil {
+				mock.ExpectExec("UPDATE tasks SET task = \\$1, done = \\$2 WHERE id = \\$3").
+					WithArgs(tc.task.Task, tc.task.Done, tc.task.ID).
+					WillReturnError(tc.dbErr)
+			} else {
+				mock.ExpectExec("UPDATE tasks SET task = \\$1, done = \\$2 WHERE id = \\$3").
+					WithArgs(tc.task.Task, tc.task.Done, tc.task.ID).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			err = repo.Update(context.Background(), tc.task)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Update() error = %v, wantErr %v", err, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
