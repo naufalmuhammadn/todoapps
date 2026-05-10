@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 ## How to Run
 
 ```bash
-go run .
+go run ./cmd/app/main.go
 ```
 
 The server starts on `http://localhost:8080`.
@@ -36,7 +36,7 @@ The server starts on `http://localhost:8080`.
 ## How to Build
 
 ```bash
-go build -o todo-app .
+go build -o todo-app ./cmd/app/main.go
 ./todo-app
 ```
 
