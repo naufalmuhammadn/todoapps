@@ -19,6 +19,15 @@ type PostgresRepo struct {
 	db *sql.DB
 }
 
+func NewPostgresRepo(connStr string) (*PostgresRepo, error) {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PostgresRepo{db: db}, nil
+}
+
 func (r *PostgresRepo) Create(ctx context.Context, t model.Task) error {
 	query := `INSERT INTO tasks (task, done) VALUES ($1, $2)`
 	_, err := r.db.ExecContext(ctx, query, t.Task, t.Done)

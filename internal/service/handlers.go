@@ -10,7 +10,7 @@ import (
 )
 
 type TaskHandler struct {
-	repo repository.TaskRepository
+	Repo repository.TaskRepository
 }
 
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.repo.Create(r.Context(), t); err != nil {
+	if err := h.Repo.Create(r.Context(), t); err != nil {
 		http.Error(w, "Failed to create task", http.StatusInternalServerError)
 		return
 	}
@@ -29,7 +29,7 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
-	tasks, err := h.repo.GetAll(r.Context())
+	tasks, err := h.Repo.GetAll(r.Context())
 	if err != nil {
 		http.Error(
 			w,
@@ -61,7 +61,7 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t.ID = idInt
-	if err := h.repo.Update(r.Context(), t); err != nil {
+	if err := h.Repo.Update(r.Context(), t); err != nil {
 		http.Error(w, "Failed to update task", http.StatusInternalServerError)
 		return
 	}
@@ -72,7 +72,7 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	if err := h.repo.Delete(r.Context(), id); err != nil {
+	if err := h.Repo.Delete(r.Context(), id); err != nil {
 		http.Error(w, "Failed to delete task", http.StatusInternalServerError)
 		return
 	}
@@ -83,7 +83,7 @@ func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	task, err := h.repo.GetByID(r.Context(), id)
+	task, err := h.Repo.GetByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, "Task not found", http.StatusNotFound)
 		return

@@ -77,7 +77,7 @@ func TestCreateTask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			handler := &TaskHandler{repo: mockRepo}
+			handler := &TaskHandler{Repo: mockRepo}
 
 			if tc.wantStatus != http.StatusBadRequest {
 				mockRepo.On("Create", mock.Anything, tc.mockTask).
@@ -128,7 +128,7 @@ func TestGetAllTasks(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			handler := &TaskHandler{repo: mockRepo}
+			handler := &TaskHandler{Repo: mockRepo}
 
 			mockRepo.On("GetAll", mock.Anything).
 				Return(tc.mockTasks, tc.mockErr)
@@ -184,7 +184,7 @@ func TestGetTask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			handler := &TaskHandler{repo: mockRepo}
+			handler := &TaskHandler{Repo: mockRepo}
 
 			mockRepo.On("GetByID", mock.Anything, tc.id).
 				Return(tc.mockTask, tc.mockErr)
@@ -249,7 +249,7 @@ func TestUpdateTask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			handler := &TaskHandler{repo: mockRepo}
+			handler := &TaskHandler{Repo: mockRepo}
 
 			if tc.setupMock {
 				mockRepo.On("Update", mock.Anything, tc.mockTask).
@@ -298,7 +298,7 @@ func TestDeleteTask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			handler := &TaskHandler{repo: mockRepo}
+			handler := &TaskHandler{Repo: mockRepo}
 
 			mockRepo.On("Delete", mock.Anything, tc.id).Return(tc.mockErr)
 
