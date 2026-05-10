@@ -1,0 +1,27 @@
+version: "2"
+
+formatters:
+  enable:
+    - gofumpt
+    - gci
+    - golines
+  settings:
+    golines:
+      max-len: 80
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - ineffassign
+    - errcheck
+    - unused
+  
+  settings:
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST1000"
+        - "-ST1020"
+        - "-ST1021"
+        - "-ST1022"
