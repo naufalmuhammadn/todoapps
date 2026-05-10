@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -121,6 +122,68 @@ func TestPostgresRepo_GetAll(t *testing.T) {
 					"GetAll() returned %d tasks, want %d",
 					len(tasks),
 					tc.wantCount,
+				)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresRepo_GetByID(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       string
+		row      *model.Task
+		wantErr  bool
+		wantTask string
+	}{
+		{
+			name:     "found",
+			id:       "1",
+			row:      &model.Task{ID: 1, Task: "Found", Done: true},
+			wantTask: "Found",
+		},
+		{
+			name:    "not found",
+			id:      "99",
+			row:     nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("failed to create sqlmock: %v", err)
+			}
+			defer func() { _ = db.Close() }()
+
+			repo := &PostgresRepo{db: db}
+
+			if tc.row != nil {
+				mock.ExpectQuery("SELECT id, task, done FROM tasks WHERE id = \\$1").
+					WithArgs(tc.id).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "task", "done"}).
+						AddRow(tc.row.ID, tc.row.Task, tc.row.Done))
+			} else {
+				mock.ExpectQuery("SELECT id, task, done FROM tasks WHERE id = \\$1").
+					WithArgs(tc.id).
+					WillReturnError(sql.ErrNoRows)
+			}
+
+			task, err := repo.GetByID(context.Background(), tc.id)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("GetByID() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if task.Task != tc.wantTask {
+				t.Errorf(
+					"GetByID() returned task %s, want %s",
+					task.Task,
+					tc.wantTask,
 				)
 			}
 

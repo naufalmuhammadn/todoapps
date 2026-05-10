@@ -10,6 +10,7 @@ import (
 type TaskRepository interface {
 	Create(ctx context.Context, t model.Task) error
 	GetAll(ctx context.Context) ([]model.Task, error)
+	GetByID(ctx context.Context, id string) (model.Task, error)
 }
 
 type PostgresRepo struct {
@@ -39,4 +40,18 @@ func (r *PostgresRepo) GetAll(ctx context.Context) ([]model.Task, error) {
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
+}
+
+func (r *PostgresRepo) GetByID(
+	ctx context.Context,
+	id string,
+) (model.Task, error) {
+	var t model.Task
+	query := `SELECT id, task, done FROM tasks WHERE id = $1`
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&t.ID, &t.Task, &t.Done)
+	if err != nil {
+		return model.Task{}, err
+	}
+	return t, nil
 }
