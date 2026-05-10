@@ -12,6 +12,7 @@ type TaskRepository interface {
 	GetAll(ctx context.Context) ([]model.Task, error)
 	GetByID(ctx context.Context, id string) (model.Task, error)
 	Update(ctx context.Context, t model.Task) error
+	Delete(ctx context.Context, id string) error
 }
 
 type PostgresRepo struct {
@@ -60,5 +61,11 @@ func (r *PostgresRepo) GetByID(
 func (r *PostgresRepo) Update(ctx context.Context, t model.Task) error {
 	query := `UPDATE tasks SET task = $1, done = $2 WHERE id = $3`
 	_, err := r.db.ExecContext(ctx, query, t.Task, t.Done, t.ID)
+	return err
+}
+
+func (r *PostgresRepo) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM tasks WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
 	return err
 }

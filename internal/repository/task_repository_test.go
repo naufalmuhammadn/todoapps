@@ -244,3 +244,54 @@ func TestPostgresRepo_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresRepo_Delete(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      string
+		dbErr   error
+		wantErr bool
+	}{
+		{
+			name: "success",
+			id:   "1",
+		},
+		{
+			name:    "db error",
+			id:      "5",
+			dbErr:   errors.New("database error"),
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("failed to create sqlmock: %v", err)
+			}
+			defer func() { _ = db.Close() }()
+
+			repo := &PostgresRepo{db: db}
+
+			if tc.dbErr != nil {
+				mock.ExpectExec("DELETE FROM tasks WHERE id = \\$1").
+					WithArgs(tc.id).
+					WillReturnError(tc.dbErr)
+			} else {
+				mock.ExpectExec("DELETE FROM tasks WHERE id = \\$1").
+					WithArgs(tc.id).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			err = repo.Delete(context.Background(), tc.id)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Delete() error = %v, wantErr %v", err, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
